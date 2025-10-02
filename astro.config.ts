@@ -2,7 +2,6 @@ import { vitePreprocess } from '@astrojs/svelte';
 import svelte from '@astrojs/svelte';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'astro/config';
-import { IAmASurgeonPlugin } from 'i-am-a-surgeon';
 
 const prod = process.env.NODE_ENV === 'production';
 
@@ -13,14 +12,7 @@ export default defineConfig({
 	integrations: [
 		svelte({
 			preprocess: vitePreprocess()
-		}),
-		prod &&
-			IAmASurgeonPlugin({
-				compressFileNames: false,
-				compressCssVariables: {
-					enabled: false
-				}
-			})
+		})
 	],
 
 	vite: {
