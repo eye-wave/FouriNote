@@ -1,0 +1,13 @@
+---
+import iconSrc from '$lib/icon.png';
+import Layout from 'src/layout.astro';
+import App from '../app/App.svelte';
+---
+
+<Layout>
+	<main class="mx-auto flex h-screen max-w-4xl flex-col items-center gap-8 py-8">
+		<App client:load />
+		<div class="flex-1"></div>
+		<img src={iconSrc.src} alt="logo" />
+	</main>
+</Layout>

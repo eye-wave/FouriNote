@@ -1,4 +1,3 @@
-import { generateAstroPagesPlugin } from './src-build/astrokit';
 import { vitePreprocess } from '@astrojs/svelte';
 import svelte from '@astrojs/svelte';
 import tailwindcss from '@tailwindcss/vite';
@@ -9,6 +8,8 @@ const prod = process.env.NODE_ENV === 'production';
 
 // https://astro.build/config
 export default defineConfig({
+	devToolbar: { enabled: false },
+
 	integrations: [
 		svelte({
 			preprocess: vitePreprocess()
@@ -37,6 +38,6 @@ export default defineConfig({
 				$wasm: '/pkg'
 			}
 		},
-		plugins: [generateAstroPagesPlugin(), tailwindcss()]
+		plugins: [tailwindcss()]
 	}
 });

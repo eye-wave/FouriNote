@@ -1,6 +1,5 @@
 @layer theme, base, components, utilities;
 
-@import './fonts.css';
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 
@@ -118,8 +117,11 @@
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0;
 	}
 	body {
-		@apply bg-background text-foreground;
+		@apply bg-background text-foreground font-sans;
 	}
 }

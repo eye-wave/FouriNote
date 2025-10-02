@@ -17,12 +17,16 @@
 		"astro": "^5.14.1",
 		"mode-watcher": "0.5.1",
 		"svelte": "^5.39.8",
+		"svelte-knobs": "1.0.0-beta.1",
 		"tailwindcss": "^4.1.14",
 		"typescript": "^5.9.3"
 	},
 	"devDependencies": {
+		"@internationalized/date": "^3.8.1",
 		"@lucide/svelte": "^0.544.0",
 		"@trivago/prettier-plugin-sort-imports": "^5.2.2",
+		"bits-ui": "^2.11.0",
+		"bun-types": "^1.2.23",
 		"cheerio": "^1.1.2",
 		"clsx": "^2.1.1",
 		"concurrently": "^9.2.1",
