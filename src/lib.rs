@@ -24,7 +24,7 @@ impl GlobalState {
             samples: [0.0; BUFFER_SIZE],
             amps: [0.0; BUFFER_SIZE],
             phases: [0.0; BUFFER_SIZE],
-            gate: [0; BUFFER_SIZE],
+            gate: [1; BUFFER_SIZE],
         }
     }
 }
