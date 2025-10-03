@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Slider from '$lib/components/ui/slider/slider.svelte';
 	import { draw } from './melody';
+	import { onMount } from 'svelte';
 
 	type Props = {
 		samples: Float32Array;
@@ -13,6 +14,21 @@
 
 	let canvas = $state<HTMLCanvasElement>();
 	let ctx = $derived.by(() => canvas?.getContext('2d'));
+
+	function onResize() {
+		if (!canvas) return;
+
+		canvas.width = canvas.parentElement!.clientWidth;
+		canvas.height = canvas.parentElement!.clientHeight;
+	}
+
+	onMount(() => {
+		onResize();
+
+		if (ctx) {
+			draw(ctx, noteRange, samples, gate);
+		}
+	});
 
 	$effect(() => {
 		if (ctx && cheatUpdate) {
@@ -54,5 +70,7 @@
 
 	<Slider type="multiple" orientation="vertical" bind:value={noteRange} min={21} max={108} />
 
-	<canvas bind:this={canvas}></canvas>
+	<div class="flex-1">
+		<canvas bind:this={canvas}></canvas>
+	</div>
 </div>
