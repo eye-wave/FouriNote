@@ -1,7 +1,8 @@
 {
 	"name": "fouri-note",
+	"description": "Web app that makes melodies out of FFT",
 	"private": true,
-	"license": "GPL-3.0-only",
+	"license": "GPL-3.0+",
 	"type": "module",
 	"version": "0.0.1",
 	"scripts": {
