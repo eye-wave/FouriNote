@@ -9,13 +9,9 @@ edition = "2024"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-microfft = { version = "0.6.0", default-features = false, features = [
-    "std",
-    "size-64",
-] }
-rustfft = "6.4.1"
+microfft = { version = "0.6.0", default-features = false, features = ["size-64"] }
+midly = { version = "0.5.3", default-features = false }
 wasm-bindgen = "0.2.104"
-web-sys = { version = "0.3.81", features = ["CanvasRenderingContext2d"] }
 wee_alloc = "0.4.5"
 
 [profile.release]
