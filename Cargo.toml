@@ -9,8 +9,9 @@ edition = "2024"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+console_error_panic_hook = "0.1.7"
 microfft = { version = "0.6.0", default-features = false, features = ["size-64"] }
-midly = { version = "0.5.3", default-features = false }
+midly = { version = "0.5.3", default-features = false, features = ["alloc"]}
 wasm-bindgen = "0.2.104"
 wee_alloc = "0.4.5"
 

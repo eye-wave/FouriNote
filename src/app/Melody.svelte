@@ -1,16 +1,19 @@
 <script lang="ts">
 	import Slider from '$lib/components/ui/slider/slider.svelte';
-	import { draw } from './melody';
+	import Piano from './Piano.svelte';
+	import { MeloApi } from './api';
+	import { draw } from './draw';
+	import { detectScale } from './piano';
 	import { onMount } from 'svelte';
 
 	type Props = {
-		samples: Float32Array;
-		gate: Uint8Array;
-		onUpdate?: (value: number, index: number) => void;
 		cheatUpdate?: number;
+		noteRange: [number, number];
 	};
 
-	let { samples, gate, onUpdate, cheatUpdate = $bindable(0) }: Props = $props();
+	let { cheatUpdate = $bindable(1), noteRange = $bindable([0, 0]) }: Props = $props();
+
+	let noteRangeValue = $derived(noteRange[1] - noteRange[0]);
 
 	let canvas = $state<HTMLCanvasElement>();
 	let ctx = $derived.by(() => canvas?.getContext('2d'));
@@ -26,18 +29,18 @@
 		onResize();
 
 		if (ctx) {
-			draw(ctx, noteRange, samples, gate);
+			draw(ctx, noteRange, MeloApi.SAMPLES, MeloApi.NOTES, MeloApi.GATE);
 		}
 	});
 
 	$effect(() => {
 		if (ctx && cheatUpdate) {
-			draw(ctx, noteRange, samples, gate);
+			draw(ctx, noteRange, MeloApi.SAMPLES, MeloApi.NOTES, MeloApi.GATE);
 		}
 	});
 
-	let noteRange = $state<[number, number]>([60, 83]);
-	let noteRangeValue = $derived(noteRange[1] - noteRange[0]);
+	let scale = $state(0);
+	let scaleName = $derived(detectScale(scale));
 
 	function midiToNote(midi: number): string {
 		const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -52,20 +55,24 @@
 	{@const isOdd = ((index >> 3) & 1) === 0}
 
 	<div class="h-full w-1" class:bg-stone-700={isOdd} class:bg-stone-600={!isOdd}>
-		{#if gate[index]}
+		{#if MeloApi.GATE[index]}
 			<div class="w-full bg-blue-500 h-2" style:transform="translateY({val * 288}px)"></div>
 		{/if}
 	</div>
 {/snippet}
 
-<div class="w-full max-w-xl flex gap-1 h-72">
-	<div class="text-center flex flex-col items-center py-4">
-		<span>Note Range</span>
+<div class="w-full max-w-xl flex gap-1 h-72 bg-stone-900 p-4 rounded-lg">
+	<div class="text-center flex flex-col items-center p-5">
+		<span class="text-lg font-bold mx-2">Note Range</span>
 		<div class="grid grid-cols-3 w-18">
 			<span>{midiToNote(noteRange[0])}</span>
 			<span>-</span>
 			<span>{midiToNote(noteRange[1])}</span>
 		</div>
+
+		<Piano bind:value={scale} />
+
+		<p>{scaleName}</p>
 	</div>
 
 	<Slider type="multiple" orientation="vertical" bind:value={noteRange} min={21} max={108} />

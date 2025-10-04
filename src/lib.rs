@@ -6,11 +6,19 @@ use wasm_bindgen::prelude::*;
 
 const BUFFER_SIZE: usize = 64;
 
+mod midi;
+
+#[cfg(debug_assertions)]
+#[wasm_bindgen(start)]
+pub fn start() {
+    console_error_panic_hook::set_once();
+}
+
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 pub struct GlobalState {
-    note_range: [u8; 2],
+    notes: [u8; BUFFER_SIZE],
     samples: [f32; BUFFER_SIZE],
     amps: [f32; BUFFER_SIZE],
     phases: [f32; BUFFER_SIZE],
@@ -20,7 +28,7 @@ pub struct GlobalState {
 impl GlobalState {
     const fn new() -> Self {
         Self {
-            note_range: [60, 83],
+            notes: [0; BUFFER_SIZE],
             samples: [0.0; BUFFER_SIZE],
             amps: [0.0; BUFFER_SIZE],
             phases: [0.0; BUFFER_SIZE],
@@ -40,11 +48,11 @@ macro_rules! export_ptr {
     };
 }
 
-export_ptr!(f32, get_samples_ptr, "getSamplesPtr", STATE.samples);
-export_ptr!(f32, get_amplitudes_ptr, "getAmplitudesPtr", STATE.amps);
-export_ptr!(f32, get_phases_ptr, "getPhasesPtr", STATE.phases);
-export_ptr!(u8, get_gate_ptr, "getGatePtr", STATE.gate);
-export_ptr!(u8, get_noterange_ptr, "getNoteRangePtr", STATE.note_range);
+export_ptr!(f32, get_samples_ptr, "gsp", STATE.samples);
+export_ptr!(f32, get_amplitudes_ptr, "gap", STATE.amps);
+export_ptr!(f32, get_phases_ptr, "gpp", STATE.phases);
+export_ptr!(u8, get_gate_ptr, "ggp", STATE.gate);
+export_ptr!(u8, get_notes_ptr, "gnp", STATE.notes);
 
 #[wasm_bindgen]
 extern "C" {
@@ -61,10 +69,9 @@ extern "C" {
     fn sqrt(x: f32) -> f32;
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = "ana")]
 pub fn analyze() {
-    let mut samples_copy = unsafe { STATE.samples };
-    let spectrum = microfft::real::rfft_64(&mut samples_copy);
+    let spectrum = unsafe { microfft::real::rfft_64(&mut STATE.samples) };
 
     for (i, c) in spectrum.iter().enumerate() {
         let re = c.re;
@@ -80,19 +87,19 @@ pub fn analyze() {
     }
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = "syn")]
 pub fn synthesize() {
-    unsafe {
-        let mut spectrum: [Complex32; BUFFER_SIZE] = [Complex32 { re: 0.0, im: 0.0 }; BUFFER_SIZE];
-        for (i, s) in spectrum.iter_mut().enumerate().take(BUFFER_SIZE) {
+    let mut spectrum: [Complex32; BUFFER_SIZE] = [Complex32 { re: 0.0, im: 0.0 }; BUFFER_SIZE];
+    for (i, s) in spectrum.iter_mut().enumerate().take(BUFFER_SIZE) {
+        unsafe {
             s.re = STATE.amps[i] * cos(STATE.phases[i]);
             s.im = STATE.amps[i] * sin(STATE.phases[i]);
         }
+    }
 
-        let time_domain = microfft::inverse::ifft_64(&mut spectrum);
+    let time_domain = microfft::inverse::ifft_64(&mut spectrum);
 
-        for (i, sample) in time_domain.iter().enumerate() {
-            STATE.samples[i] = sample.re;
-        }
+    for (i, sample) in time_domain.iter().enumerate() {
+        unsafe { STATE.samples[i] = sample.re }
     }
 }

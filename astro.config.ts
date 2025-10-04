@@ -9,8 +9,8 @@ const prod = process.env.NODE_ENV === 'production';
 export default defineConfig({
 	devToolbar: { enabled: false },
 
-	site: 'https://eye-wave.github.io',
-	base: '/FouriNote',
+	site: prod ? 'https://eye-wave.github.io' : undefined,
+	base: prod ? '/FouriNote' : undefined,
 
 	integrations: [
 		svelte({

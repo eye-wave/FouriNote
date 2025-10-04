@@ -11,3 +11,9 @@ import App from '../app/App.svelte';
 		<img src={iconSrc.src} alt="logo" />
 	</main>
 </Layout>
+
+<script>
+	import { MeloApi } from '../app/api';
+
+	MeloApi.init();
+</script>

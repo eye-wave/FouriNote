@@ -30,7 +30,7 @@
 		onclear,
 		onrandomize,
 		snippet,
-		cheatUpdate = $bindable(0)
+		cheatUpdate = $bindable(1)
 	}: Props = $props();
 
 	let ref = $state<HTMLDivElement>();
@@ -104,7 +104,7 @@
 
 	<ContextMenu.Root>
 		<ContextMenu.Trigger>
-			<div class="flex w-fit h-full" draggable="false" bind:this={ref}>
+			<div class="flex w-fit h-full rounded-md overflow-hidden" draggable="false" bind:this={ref}>
 				{#key cheatUpdate}
 					{#each range(0, bins) as i}
 						{@const value = Math.min(max, Math.max(min, normalize(buffer[i], min, max)))}
