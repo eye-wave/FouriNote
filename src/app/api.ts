@@ -8,8 +8,9 @@ import {
 	gpp as getPhasesPtr,
 	gsn as getSampleNorm,
 	gsp as getSamplesPtr,
-	stn as samplesToNotes,
+	dsn as samplesToNotes,
 	syn as synthesize,
+	cnr as countNoteInRange,
 	type InitOutput
 } from '$wasm/melofft';
 import wasmUrl from '$wasm/melofft_bg.wasm?url';
@@ -55,15 +56,17 @@ function createApi() {
 
 	const _exportMidi = ensureInit(exportMidiFile);
 	const _sampleToNotes = ensureInit(samplesToNotes);
+	const _countNoteInRange = ensureInit(countNoteInRange);
 
 	// prettier-ignore
 	return {
 		init,
 		analyze: ensureInit(analyze),
 		synthesize: ensureInit(synthesize),
-    samplesToNotes: async(noteRanges: [number,number]) => {
-      await _sampleToNotes(noteRanges[0],noteRanges[1])
+    samplesToNotes: async(noteRanges: [number,number], scale: number) => {
+      await _sampleToNotes(noteRanges[0],noteRanges[1],scale)
     },
+    countNoteInRange: async(noteRanges: [number,number], scale: number) => _countNoteInRange(noteRanges[0],noteRanges[1],scale),
     getSampleNorm: ensureInit(getSampleNorm),
     exportMidiFile: async (bpm: number) => {
       const file = await _exportMidi(bpm)

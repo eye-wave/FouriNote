@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Kbd from '$lib/components/ui/kbd/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
 	import Slider from '$lib/components/ui/slider/slider.svelte';
 	import Piano from './Piano.svelte';
 	import { MeloApi } from './api';
@@ -10,12 +11,19 @@
 	type Props = {
 		cheatUpdate?: number;
 		noteRange: [number, number];
+		scale: number;
 	};
 
-	let { cheatUpdate = $bindable(1), noteRange = $bindable([0, 0]) }: Props = $props();
+	let {
+		cheatUpdate = $bindable(1),
+		noteRange = $bindable([0, 0]),
+		scale = $bindable(0)
+	}: Props = $props();
 
 	let canvas = $state<HTMLCanvasElement>();
 	let ctx = $derived.by(() => canvas?.getContext('2d'));
+
+	let drawGraph = $state(true);
 
 	function onResize() {
 		if (!canvas) return;
@@ -28,48 +36,56 @@
 		onResize();
 
 		if (ctx) {
-			draw(ctx, noteRange, MeloApi.SAMPLES, MeloApi.NOTES, MeloApi.GATE);
+			draw(ctx, noteRange, scale, MeloApi.SAMPLES, MeloApi.NOTES, MeloApi.GATE, drawGraph);
 		}
 	});
 
 	$effect(() => {
 		if (ctx && cheatUpdate) {
-			draw(ctx, noteRange, MeloApi.SAMPLES, MeloApi.NOTES, MeloApi.GATE);
+			draw(ctx, noteRange, scale, MeloApi.SAMPLES, MeloApi.NOTES, MeloApi.GATE, drawGraph);
 		}
 	});
 
-	let scale = $state(0);
 	let scaleName = $derived(detectScale(scale));
 </script>
 
-<div class="w-full max-w-2xl flex gap-1 bg-stone-900 p-4 rounded-lg select-none">
-	<div class="text-center flex flex-col items-center p-5">
-		<span class="text-lg font-bold mx-2">Note Range</span>
-		<div class="grid grid-cols-3 w-18">
-			<span>{midiToNote(noteRange[0])}</span>
-			<span>-</span>
-			<span>{midiToNote(noteRange[1])}</span>
+<div class="w-full max-w-2xl bg-stone-900 p-4 rounded-lg select-none">
+	<div class="flex gap-1">
+		<div class="text-center flex flex-col items-center p-5">
+			<span class="text-lg font-bold mx-2">Note Range</span>
+			<div class="grid grid-cols-3 w-18">
+				<span>{midiToNote(noteRange[0])}</span>
+				<span>-</span>
+				<span>{midiToNote(noteRange[1])}</span>
+			</div>
+
+			<Piano bind:value={scale} />
+			<p class="font-sans min-h-10 w-36">{scaleName}</p>
+
+			{#snippet scaleShortcut(key: string, scale: string)}
+				<div class="flex flex-col items-start w-full mt-4">
+					<div class="flex gap-2">
+						<Kbd.Root>{key}</Kbd.Root>+<Kbd.Root>Click</Kbd.Root>
+					</div>
+					<p class="whitespace-nowrap text-sm">for {scale} scale</p>
+				</div>
+			{/snippet}
+
+			{@render scaleShortcut('Ctrl', 'Major')}
+			{@render scaleShortcut('Shift', 'Pentatonic')}
 		</div>
 
-		<Piano bind:value={scale} />
-		<p class="font-sans min-h-10 w-36">{scaleName}</p>
+		<div class="flex-1 flex gap-2">
+			<Slider type="multiple" orientation="vertical" bind:value={noteRange} min={21} max={108} />
 
-		{#snippet scaleShortcut(key: string, scale: string)}
-			<div class="flex flex-col items-start w-full mt-4">
-				<div class="flex gap-2">
-					<Kbd.Root>{key}</Kbd.Root>+<Kbd.Root>Click</Kbd.Root>
-				</div>
-				<p class="whitespace-nowrap text-sm">for {scale} scale</p>
+			<div class="flex-1">
+				<canvas bind:this={canvas}></canvas>
 			</div>
-		{/snippet}
-
-		{@render scaleShortcut('Ctrl', 'Major')}
-		{@render scaleShortcut('Shift', 'Pentatonic')}
+		</div>
 	</div>
 
-	<Slider type="multiple" orientation="vertical" bind:value={noteRange} min={21} max={108} />
-
-	<div class="flex-1">
-		<canvas bind:this={canvas}></canvas>
+	<div class="flex items-center gap-3 ml-auto w-fit mt-4">
+		<input type="checkbox" id="draw-grid" bind:checked={drawGraph} />
+		<Label for="draw-grid">Draw graph</Label>
 	</div>
 </div>

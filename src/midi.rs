@@ -17,16 +17,34 @@ pub fn get_sample_norm() -> f32 {
     if norm > 1.0 { norm } else { 1.0 }
 }
 
-#[wasm_bindgen(js_name = "stn")]
-pub fn samples_to_notes(min_note: u8, max_note: u8) {
+#[wasm_bindgen(js_name = "cnr")]
+pub fn count_notes_in_range(min_note: u8, max_note: u8, scale: u16) -> u8 {
+    let mut count = 0;
+
+    if scale == 0 || scale == 4095 {
+        return max_note - min_note;
+    }
+
+    for note in min_note..=max_note {
+        let pitch_class = note % 12;
+        if (scale & (1 << pitch_class)) != 0 {
+            count += 1;
+        }
+    }
+
+    count
+}
+
+#[wasm_bindgen(js_name = "dsn")]
+pub fn downsample_notes(min_note: u8, max_note: u8, scale: u16) {
     let norm = get_sample_norm();
-    let note_range = (max_note - min_note) as f32;
+    let note_range = count_notes_in_range(min_note, max_note, scale) as f32;
 
     for (i, sample) in unsafe { &STATE.samples }.iter().enumerate() {
         let normalized = 1.0 - (sample / norm / 2.0 + 0.5);
         let note = (normalized * note_range).floor() as u8;
 
-        unsafe { STATE.notes[i] = min_note + note }
+        unsafe { STATE.notes[i] = note }
     }
 }
 
@@ -36,8 +54,7 @@ pub fn export_midi_file(bpm: u32) -> Vec<u8> {
     let gate = unsafe { STATE.gate };
     let tpq = 480;
 
-    let mut tracks = Vec::new();
-    tracks.push(Vec::new());
+    let tracks = (0..1).map(|_| Vec::new()).collect();
 
     let mut smf = Smf {
         header: Header {

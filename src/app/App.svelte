@@ -10,6 +10,7 @@
 	let cheatUpdate = $state(1);
 
 	let noteRange = $state<[number, number]>([60, 83]);
+	let scale = $state(0);
 
 	let BPMValue = $state(0.0);
 	const BPMParam = new LinearParam(60, 200);
@@ -24,14 +25,16 @@
 
 		if (forward !== undefined) {
 			await (forward ? MeloApi.analyze : MeloApi.synthesize)();
-			await MeloApi.samplesToNotes(noteRange);
+			await MeloApi.samplesToNotes(noteRange, scale);
 		}
 
 		cheatUpdate += 1;
 	}
 
 	$effect(() => {
-		MeloApi.samplesToNotes(noteRange);
+		MeloApi.samplesToNotes(noteRange, scale).then(() => {
+			cheatUpdate += 1;
+		});
 	});
 
 	async function randomize(buffer: Float32Array | Uint8Array, min = 0, max = 1) {
@@ -46,7 +49,7 @@
 		}
 
 		await MeloApi.synthesize();
-		await MeloApi.samplesToNotes(noteRange);
+		await MeloApi.samplesToNotes(noteRange, scale);
 
 		cheatUpdate += 1;
 	}
@@ -55,14 +58,14 @@
 		buffer.fill(value);
 
 		await MeloApi.synthesize();
-		await MeloApi.samplesToNotes(noteRange);
+		await MeloApi.samplesToNotes(noteRange, scale);
 
 		cheatUpdate += 1;
 	}
 </script>
 
 <div class="w-full flex flex-col items-center gap-4">
-	<Melody bind:cheatUpdate bind:noteRange />
+	<Melody bind:cheatUpdate bind:noteRange bind:scale />
 
 	<Slider
 		bind:cheatUpdate

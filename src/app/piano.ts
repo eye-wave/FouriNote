@@ -1,6 +1,8 @@
 import { generateScaleLookup } from './scales' with { type: 'macro' };
 import { MAJOR_PATTERN, PENTATONIC_PATTERN, getScale } from './scales';
 
+export { NOTE_NAMES } from './scales';
+
 const [COMMON_SCALES, SCALE_IDS] = generateScaleLookup();
 const BLACK_KEYS: readonly number[] = [1, 3, 6, 8, 10];
 
@@ -29,4 +31,9 @@ export function midiToNote(midi: number): string {
 	const octave = Math.floor(midi / 12) - 1;
 	const note = notes[midi % 12];
 	return `${note}${octave}`;
+}
+
+export function isNoteInScale(note: number, scale: number): boolean {
+	const noteClass = note % 12;
+	return (scale & (1 << noteClass)) !== 0;
 }
