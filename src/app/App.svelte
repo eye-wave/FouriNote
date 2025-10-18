@@ -37,6 +37,10 @@
 		});
 	});
 
+	$effect(() => {
+		console.log(MeloApi.SAMPLES);
+	});
+
 	async function randomize(buffer: Float32Array | Uint8Array, min = 0, max = 1) {
 		if (buffer instanceof Float32Array) {
 			buffer.forEach((_, i, a) => {
@@ -65,7 +69,12 @@
 </script>
 
 <div class="w-full flex flex-col items-center gap-4">
-	<Melody bind:cheatUpdate bind:noteRange bind:scale />
+	<Melody
+		bind:cheatUpdate
+		bind:noteRange
+		bind:scale
+		onUpdate={(i, v) => onUpdate(MeloApi.SAMPLES, i, v, true)}
+	/>
 
 	<Slider
 		bind:cheatUpdate

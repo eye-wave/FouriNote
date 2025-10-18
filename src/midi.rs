@@ -7,6 +7,11 @@ use wasm_bindgen::prelude::*;
 
 use crate::{BUFFER_SIZE, STATE};
 
+#[inline]
+fn is_chromatic(scale: u16) -> bool {
+    scale == 0 || scale == 4095
+}
+
 #[wasm_bindgen(js_name = "gsn")]
 pub fn get_sample_norm() -> f32 {
     let norm = unsafe { &STATE.samples }
@@ -21,7 +26,7 @@ pub fn get_sample_norm() -> f32 {
 pub fn count_notes_in_range(min_note: u8, max_note: u8, scale: u16) -> u8 {
     let mut count = 0;
 
-    if scale == 0 || scale == 4095 {
+    if is_chromatic(scale) {
         return max_note - min_note;
     }
 
@@ -48,9 +53,34 @@ pub fn downsample_notes(min_note: u8, max_note: u8, scale: u16) {
     }
 }
 
+#[wasm_bindgen(js_name = "nns")]
+pub fn get_nth_note_in_scale(n: u8, min_note: u8, max_note: u8, scale: u16) -> u8 {
+    if is_chromatic(scale) {
+        return (min_note + n).min(max_note);
+    }
+
+    if n == 0 {
+        return min_note;
+    }
+
+    let mut count = 0;
+
+    for note in min_note..=max_note {
+        if is_note_in_scale(note, scale) {
+            if n == count {
+                return note;
+            }
+
+            count += 1;
+        }
+    }
+
+    max_note
+}
+
 #[wasm_bindgen(js_name = "ins")]
 pub fn is_note_in_scale(note: u8, scale: u16) -> bool {
-    if scale == 0 || scale == 4095 {
+    if is_chromatic(scale) {
         return true;
     }
 

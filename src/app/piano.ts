@@ -26,9 +26,11 @@ export function isNoteBlack(midiNote: number) {
 	return BLACK_KEYS.includes(midiNote % 12);
 }
 
-export function midiToNote(midi: number): string {
+export function midiToNote(midi: number, pad = false): string {
 	const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 	const octave = Math.floor(midi / 12) - 1;
 	const note = notes[midi % 12];
+
+	if (pad) return `${note.padEnd(2, ' ')}${octave}`;
 	return `${note}${octave}`;
 }

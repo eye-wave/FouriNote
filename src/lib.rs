@@ -71,7 +71,8 @@ extern "C" {
 
 #[wasm_bindgen(js_name = "ana")]
 pub fn analyze() {
-    let spectrum = unsafe { microfft::real::rfft_64(&mut STATE.samples) };
+    let mut samples = unsafe { STATE.samples.clone() };
+    let spectrum = microfft::real::rfft_64(&mut samples);
 
     for (i, c) in spectrum.iter().enumerate() {
         let re = c.re;

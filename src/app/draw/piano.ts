@@ -1,5 +1,5 @@
 import { PIANO_WIDTH } from '../draw';
-import { isNoteBlack, NOTE_NAMES } from '../piano';
+import { isNoteBlack, midiToNote } from '../piano';
 
 export function drawPiano(
 	ctx: CanvasRenderingContext2D,
@@ -31,7 +31,7 @@ export function drawPiano(
 	for (let i = 0; i < scaleNotes.length; i++) {
 		const note = scaleNotes[i];
 		const y = ctx.canvas.height - (i + 0.5) * blockHeight;
-		const noteName = NOTE_NAMES[note % 12] + Math.floor(note / 12);
+		const noteName = midiToNote(note);
 
 		if (isNoteBlack(note)) ctx.fillStyle = 'cyan';
 		else ctx.fillStyle = 'red';

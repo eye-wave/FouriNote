@@ -3,25 +3,79 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import Slider from '$lib/components/ui/slider/slider.svelte';
 	import Piano from './Piano.svelte';
-	import { MeloApi } from './api';
-	import { draw } from './draw';
-	import { detectScale, midiToNote } from './piano';
+	import { BUFFER_SIZE, MeloApi } from './api';
+	import { draw, PIANO_WIDTH } from './draw';
+	import { detectScale, midiToNote, NOTE_NAMES } from './piano';
 	import { onMount } from 'svelte';
 
 	type Props = {
 		cheatUpdate?: number;
 		noteRange: [number, number];
 		scale: number;
+		onUpdate?: (i: number, v: number) => void;
 	};
 
 	let {
 		cheatUpdate = $bindable(1),
 		noteRange = $bindable([0, 0]),
-		scale = $bindable(0)
+		scale = $bindable(0),
+		onUpdate
 	}: Props = $props();
 
+	let box = $state<DOMRect>({ left: 0, top: 0, width: 0, height: 0 } as DOMRect);
 	let canvas = $state<HTMLCanvasElement>();
 	let ctx = $derived.by(() => canvas?.getContext('2d'));
+
+	let mouse = $state({ x: 0, y: 0, down: false });
+
+	function downsamplePosition(mouseX: number) {
+		let x = mouseX / (box.width - PIANO_WIDTH);
+		x = (x * BUFFER_SIZE) | 0;
+
+		return x;
+	}
+
+	function normalizeY(mouseY: number) {
+		const y = (mouseY / box.height) * 2;
+
+		return y - 1;
+	}
+
+	let currentNoteName = $state('C');
+	let currentNotePosition = $derived(downsamplePosition(mouse.x));
+
+	$effect(() => {
+		const y = mouse.y;
+
+		MeloApi.countNoteInRange(noteRange, scale)
+			.then((count) => (count - (y / box.height) * count) | 0)
+			.then((y) =>
+				MeloApi.getNthNoteInScale(y, noteRange, scale).then((note) => {
+					currentNoteName = midiToNote(note, true);
+				})
+			);
+	});
+
+	function clamp(v: number, min: number, max: number) {
+		return Math.max(Math.min(max, v), min);
+	}
+
+	async function onMouseMove(e: MouseEvent) {
+		if (box.width === 0 && canvas) box = canvas.getBoundingClientRect();
+
+		const _x = e.clientX - box.left;
+		const _y = e.clientY - box.top;
+
+		mouse.x = clamp(_x - PIANO_WIDTH, 0, box.width - PIANO_WIDTH);
+		mouse.y = clamp(_y, 0, box.height);
+
+		if (!mouse.down) return;
+
+		const x = downsamplePosition(mouse.x);
+		const y = normalizeY(mouse.y);
+
+		onUpdate?.(x, y);
+	}
 
 	let drawGraph = $state(true);
 
@@ -30,6 +84,12 @@
 
 		canvas.width = canvas.parentElement!.clientWidth;
 		canvas.height = canvas.parentElement!.clientHeight;
+	}
+
+	function onMouseOver() {
+		if (!canvas) return;
+
+		box = canvas.getBoundingClientRect();
 	}
 
 	onMount(() => {
@@ -75,11 +135,22 @@
 			{@render scaleShortcut('Shift', 'Pentatonic')}
 		</div>
 
-		<div class="flex-1 flex gap-2">
-			<Slider type="multiple" orientation="vertical" bind:value={noteRange} min={21} max={108} />
+		<div class="flex-1 w-full">
+			<p class="font-mono text-end text-xs italic">Note {currentNotePosition}, {currentNoteName}</p>
 
-			<div class="flex-1">
-				<canvas bind:this={canvas}></canvas>
+			<div class="flex-1 h-full flex gap-2">
+				<Slider type="multiple" orientation="vertical" bind:value={noteRange} min={21} max={108} />
+
+				<div class="flex-1">
+					<canvas
+						bind:this={canvas}
+						onmouseup={() => (mouse.down = false)}
+						onmouseleave={() => (mouse.down = false)}
+						onmousedown={() => (mouse.down = true)}
+						onmousemove={onMouseMove}
+						onmouseenter={onMouseOver}
+					></canvas>
+				</div>
 			</div>
 		</div>
 	</div>

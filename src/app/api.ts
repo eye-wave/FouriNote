@@ -1,6 +1,8 @@
 import {
 	initSync,
 	ana as analyze,
+	cnr as countNoteInRange,
+	dsn as samplesToNotes,
 	emf as exportMidiFile,
 	gap as getAmplitudesPtr,
 	ggp as getGatePtr,
@@ -8,10 +10,9 @@ import {
 	gpp as getPhasesPtr,
 	gsn as getSampleNorm,
 	gsp as getSamplesPtr,
-	dsn as samplesToNotes,
-	syn as synthesize,
-	cnr as countNoteInRange,
 	ins as isNoteInScale,
+	nns as getNthNoteInScale,
+	syn as synthesize,
 	type InitOutput
 } from '$wasm/melofft';
 import wasmUrl from '$wasm/melofft_bg.wasm?url';
@@ -58,6 +59,7 @@ function createApi() {
 	const _exportMidi = ensureInit(exportMidiFile);
 	const _sampleToNotes = ensureInit(samplesToNotes);
 	const _countNoteInRange = ensureInit(countNoteInRange);
+	const _getNthNoteInScale = ensureInit(getNthNoteInScale);
 
 	return {
 		init,
@@ -65,6 +67,11 @@ function createApi() {
 		synthesize: ensureInit(synthesize),
 		isNoteInScale: ensureInit(isNoteInScale),
 		getSampleNorm: ensureInit(getSampleNorm),
+
+		getNthNoteInScale: async (note: number, noteRanges: [number, number], scale: number) => {
+			return await _getNthNoteInScale(note, ...noteRanges, scale);
+		},
+
 		samplesToNotes: async (noteRanges: [number, number], scale: number) => {
 			await _sampleToNotes(...noteRanges, scale);
 		},

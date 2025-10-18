@@ -1,4 +1,4 @@
-import { BUFFER_SIZE, MeloApi } from '../api';
+import { BUFFER_SIZE } from '../api';
 import { PIANO_WIDTH } from '../draw';
 
 export function drawGrid(ctx: CanvasRenderingContext2D, noteCount: number, bw: number, bh: number) {
