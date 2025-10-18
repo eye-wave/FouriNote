@@ -4,7 +4,6 @@
 	import Slider from './Slider.svelte';
 	import { BUFFER_SIZE, MeloApi, NUM_BINS } from './api';
 	import { downloadBuffer } from './download';
-	import { createAudioSequencer } from './playback';
 	import { Draggable } from 'svelte-knobs';
 	import { LinearParam } from 'svelte-knobs/params';
 
@@ -30,6 +29,10 @@
 
 		cheatUpdate += 1;
 	}
+
+	$effect(() => {
+		MeloApi.samplesToNotes(noteRange);
+	});
 
 	async function randomize(buffer: Float32Array | Uint8Array, min = 0, max = 1) {
 		if (buffer instanceof Float32Array) {
@@ -107,9 +110,6 @@
 		<Button
 			onclick={async () => {
 				const bpm = BPMParam.denormalize(BPMValue);
-				const seq = createAudioSequencer(MeloApi.NOTES, MeloApi.GATE, bpm);
-
-				seq.start();
 			}}>Play</Button
 		>
 		<Button

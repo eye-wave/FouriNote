@@ -2,6 +2,7 @@ import { vitePreprocess } from '@astrojs/svelte';
 import svelte from '@astrojs/svelte';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'astro/config';
+import Macros from 'unplugin-macros/vite';
 
 const prod = process.env.NODE_ENV === 'production';
 
@@ -33,6 +34,6 @@ export default defineConfig({
 				$wasm: '/pkg'
 			}
 		},
-		plugins: [tailwindcss()]
+		plugins: [tailwindcss(), Macros()]
 	}
 });

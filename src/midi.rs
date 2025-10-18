@@ -32,8 +32,8 @@ pub fn samples_to_notes(min_note: u8, max_note: u8) {
 
 #[wasm_bindgen(js_name = "emf")]
 pub fn export_midi_file(bpm: u32) -> Vec<u8> {
-    let notes = unsafe { STATE.notes.clone() };
-    let gate = unsafe { STATE.gate.clone() };
+    let notes = unsafe { STATE.notes };
+    let gate = unsafe { STATE.gate };
     let tpq = 480;
 
     let mut tracks = Vec::new();

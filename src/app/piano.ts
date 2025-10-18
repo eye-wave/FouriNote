@@ -1,23 +1,32 @@
-const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+import { generateScaleLookup } from './scales' with { type: 'macro' };
+import { MAJOR_PATTERN, PENTATONIC_PATTERN, getScale } from './scales';
 
-const COMMON_SCALES: Record<number, string> = {
-	0b101011010101: 'Major',
-	0b101101011010: 'Minor',
-	0b100010010101: 'Pentatonic Major',
-	0b100100101010: 'Pentatonic Minor'
-};
+const [COMMON_SCALES, SCALE_IDS] = generateScaleLookup();
+const BLACK_KEYS: readonly number[] = [1, 3, 6, 8, 10];
 
-export function detectScale(scaleBits: number): string {
-	for (let shift = 0; shift < 12; shift++) {
-		const rotated = ((scaleBits << shift) | (scaleBits >> (12 - shift))) & 0xfff;
-		if (COMMON_SCALES[rotated] !== undefined) {
-			return `${NOTE_NAMES[shift]} ${COMMON_SCALES[rotated]}`;
-		}
-	}
-	return 'Unknown Scale';
+export const getMajorScale = (root: number) => getScale(root, MAJOR_PATTERN);
+export const getPentatonicScale = (root: number) => getScale(root, PENTATONIC_PATTERN);
+
+export function getRandomScale() {
+	const i = (Math.random() * SCALE_IDS.length) | 0;
+	return SCALE_IDS[i];
+}
+
+export function getRandomNotes() {
+	return (Math.random() * 4095) | 0;
+}
+
+export function detectScale(mask: number): string {
+	return COMMON_SCALES[mask] ?? 'Unknown scale';
 }
 
 export function isNoteBlack(midiNote: number) {
-	const blackKeys = [1, 3, 6, 8, 10];
-	return blackKeys.includes(midiNote % 12);
+	return BLACK_KEYS.includes(midiNote % 12);
+}
+
+export function midiToNote(midi: number): string {
+	const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+	const octave = Math.floor(midi / 12) - 1;
+	const note = notes[midi % 12];
+	return `${note}${octave}`;
 }

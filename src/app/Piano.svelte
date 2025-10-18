@@ -1,6 +1,12 @@
 <script lang="ts">
 	import * as ContextMenu from '$lib/components/ui/context-menu/index';
-	import { detectScale, isNoteBlack } from './piano';
+	import {
+		getMajorScale,
+		getPentatonicScale,
+		isNoteBlack,
+		getRandomNotes,
+		getRandomScale
+	} from './piano';
 	import { range } from './range';
 
 	type Props = { value: number };
@@ -10,6 +16,13 @@
 	function flipBit(pos: number) {
 		if (pos < 0 || pos > 31) throw new Error('Bit position must be 0-31');
 		scale ^= 1 << pos;
+	}
+
+	function onClick(i: number, e: MouseEvent) {
+		if (e.ctrlKey) return (scale = getMajorScale(i));
+		if (e.shiftKey) return (scale = getPentatonicScale(i));
+
+		flipBit(i);
 	}
 
 	function isBitSet(pos: number) {
@@ -25,8 +38,8 @@
 				{@const isActive = isBitSet(i)}
 
 				<div
-					onclick={() => flipBit(i)}
-					class="bg-lime-400"
+					onclick={(e) => onClick(i, e)}
+					class="bg-lime-400 transition-colors"
 					data-active={isActive}
 					class:white={!isBlack}
 					class:black={isBlack}
@@ -36,6 +49,8 @@
 	</ContextMenu.Trigger>
 	<ContextMenu.Content>
 		<ContextMenu.Item onclick={() => (scale = 0)}>Clear</ContextMenu.Item>
+		<ContextMenu.Item onclick={() => (scale = getRandomScale())}>Random scale</ContextMenu.Item>
+		<ContextMenu.Item onclick={() => (scale = getRandomNotes())}>Pure Random</ContextMenu.Item>
 	</ContextMenu.Content>
 </ContextMenu.Root>
 
