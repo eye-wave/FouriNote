@@ -1,7 +1,7 @@
-import { generateScaleLookup } from './scales' with { type: 'macro' };
-import { MAJOR_PATTERN, PENTATONIC_PATTERN, getScale } from './scales';
+import { generateScaleLookup } from './piano/scales' with { type: 'macro' };
+import { MAJOR_PATTERN, PENTATONIC_PATTERN, getScale } from './piano/scales';
 
-export { NOTE_NAMES } from './scales';
+export { NOTE_NAMES } from './piano/scales';
 
 const [COMMON_SCALES, SCALE_IDS] = generateScaleLookup();
 const BLACK_KEYS: readonly number[] = [1, 3, 6, 8, 10];
