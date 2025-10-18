@@ -32,8 +32,3 @@ export function midiToNote(midi: number): string {
 	const note = notes[midi % 12];
 	return `${note}${octave}`;
 }
-
-export function isNoteInScale(note: number, scale: number): boolean {
-	const noteClass = note % 12;
-	return (scale & (1 << noteClass)) !== 0;
-}

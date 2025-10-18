@@ -65,7 +65,7 @@
 			{#snippet scaleShortcut(key: string, scale: string)}
 				<div class="flex flex-col items-start w-full mt-4">
 					<div class="flex gap-2">
-						<Kbd.Root>{key}</Kbd.Root>+<Kbd.Root>Click</Kbd.Root>
+						<Kbd.Root>{key}</Kbd.Root>+ click
 					</div>
 					<p class="whitespace-nowrap text-sm">for {scale} scale</p>
 				</div>

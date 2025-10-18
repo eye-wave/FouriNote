@@ -11,6 +11,7 @@ import {
 	dsn as samplesToNotes,
 	syn as synthesize,
 	cnr as countNoteInRange,
+	ins as isNoteInScale,
 	type InitOutput
 } from '$wasm/melofft';
 import wasmUrl from '$wasm/melofft_bg.wasm?url';
@@ -58,28 +59,39 @@ function createApi() {
 	const _sampleToNotes = ensureInit(samplesToNotes);
 	const _countNoteInRange = ensureInit(countNoteInRange);
 
-	// prettier-ignore
 	return {
 		init,
 		analyze: ensureInit(analyze),
 		synthesize: ensureInit(synthesize),
-    samplesToNotes: async(noteRanges: [number,number], scale: number) => {
-      await _sampleToNotes(noteRanges[0],noteRanges[1],scale)
-    },
-    countNoteInRange: async(noteRanges: [number,number], scale: number) => _countNoteInRange(noteRanges[0],noteRanges[1],scale),
-    getSampleNorm: ensureInit(getSampleNorm),
-    exportMidiFile: async (bpm: number) => {
-      const file = await _exportMidi(bpm)
-      relocatePointers(wasm!);
+		isNoteInScale: ensureInit(isNoteInScale),
+		getSampleNorm: ensureInit(getSampleNorm),
+		samplesToNotes: async (noteRanges: [number, number], scale: number) => {
+			await _sampleToNotes(...noteRanges, scale);
+		},
+		countNoteInRange: async (noteRanges: [number, number], scale: number) =>
+			_countNoteInRange(...noteRanges, scale),
+		exportMidiFile: async (noteRanges: [number, number], scale: number, bpm: number) => {
+			const file = await _exportMidi(...noteRanges, scale, bpm);
+			relocatePointers(wasm!);
 
-      return file
-    },
+			return file;
+		},
 
-    get NOTES() { return NOTES },
-    get SAMPLES() { return SAMPLES },
-    get GATE() { return GATE },
-    get AMPLITUDES() { return AMPLITUDES },
-    get PHASES() { return PHASES },
+		get NOTES() {
+			return NOTES;
+		},
+		get SAMPLES() {
+			return SAMPLES;
+		},
+		get GATE() {
+			return GATE;
+		},
+		get AMPLITUDES() {
+			return AMPLITUDES;
+		},
+		get PHASES() {
+			return PHASES;
+		}
 	};
 }
 

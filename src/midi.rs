@@ -5,7 +5,7 @@ use midly::num::{u4, u7, u15};
 use midly::{Format, Header, MetaMessage, MidiMessage, Smf, Timing, TrackEvent, TrackEventKind};
 use wasm_bindgen::prelude::*;
 
-use crate::STATE;
+use crate::{BUFFER_SIZE, STATE};
 
 #[wasm_bindgen(js_name = "gsn")]
 pub fn get_sample_norm() -> f32 {
@@ -48,12 +48,47 @@ pub fn downsample_notes(min_note: u8, max_note: u8, scale: u16) {
     }
 }
 
+#[wasm_bindgen(js_name = "ins")]
+pub fn is_note_in_scale(note: u8, scale: u16) -> bool {
+    if scale == 0 || scale == 4095 {
+        return true;
+    }
+
+    let note_class = note % 12;
+    (scale & (1 << note_class)) != 0
+}
+
+fn downsampled_to_midi(min_note: u8, max_note: u8, scale: u16) -> [u8; BUFFER_SIZE] {
+    let mut midi_notes = [0; BUFFER_SIZE];
+
+    let allowed_notes: Vec<u8> = (min_note..=max_note)
+        .filter(|&note| is_note_in_scale(note, scale))
+        .collect();
+
+    if allowed_notes.is_empty() {
+        return midi_notes;
+    }
+
+    for (i, note) in unsafe { &STATE.notes }.iter().enumerate() {
+        let note = *note as usize;
+        let idx = if note >= allowed_notes.len() {
+            allowed_notes.len() - 1
+        } else {
+            note
+        };
+
+        midi_notes[i] = allowed_notes[idx];
+    }
+
+    midi_notes
+}
+
 #[wasm_bindgen(js_name = "emf")]
-pub fn export_midi_file(bpm: u32) -> Vec<u8> {
-    let notes = unsafe { STATE.notes };
+pub fn export_midi_file(min_note: u8, max_note: u8, scale: u16, bpm: u32) -> Vec<u8> {
     let gate = unsafe { STATE.gate };
     let tpq = 480;
 
+    let notes = downsampled_to_midi(min_note, max_note, scale);
     let tracks = (0..1).map(|_| Vec::new()).collect();
 
     let mut smf = Smf {

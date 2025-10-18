@@ -3,7 +3,6 @@ import { drawGraph } from './draw/graph';
 import { drawGrid } from './draw/grid';
 import { drawMelody } from './draw/melody';
 import { drawPiano } from './draw/piano';
-import { isNoteInScale } from './piano';
 
 export const PIANO_WIDTH = 40;
 
@@ -24,7 +23,7 @@ export async function draw(
 	const [noteStart, noteEnd] = noteRanges;
 	const scaleNotes: number[] = [];
 	for (let note = noteStart; note <= noteEnd; note++) {
-		if (isNoteInScale(note, scale || 4095)) {
+		if (await MeloApi.isNoteInScale(note, scale)) {
 			scaleNotes.push(note);
 		}
 	}
@@ -37,7 +36,8 @@ export async function draw(
 
 	drawPiano(ctx, scaleNotes, blockHeight);
 	drawGrid(ctx, noteCount, blockWidth, blockHeight);
-	drawMelody(ctx, noteCount, notes, gate, blockHeight, blockWidth);
 
 	shouldDrawGraph && drawGraph(ctx, samples, norm, blockWidth);
+
+	drawMelody(ctx, noteCount, notes, gate, blockHeight, blockWidth);
 }

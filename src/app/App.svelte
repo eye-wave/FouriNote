@@ -118,7 +118,7 @@
 		<Button
 			onclick={async () => {
 				const bpm = BPMParam.denormalize(BPMValue);
-				const file = await MeloApi.exportMidiFile(bpm);
+				const file = await MeloApi.exportMidiFile(noteRange, scale, bpm);
 
 				downloadBuffer(file, 'melody.mid');
 			}}>Export</Button

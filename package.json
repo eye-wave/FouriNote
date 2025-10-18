@@ -72,6 +72,8 @@
 	},
 	"trustedDependencies": [
 		"@tailwindcss/oxide",
+		"esbuild",
+		"sharp",
 		"wasm-pack"
 	]
 }
